@@ -51,8 +51,9 @@
 // The optimization objective
 #include "ompl/base/OptimizationObjective.h"
 
-// I am member class of the BITstar class, so I need to include it's definition to be aware of the class BITstar. It has
-// a forward declaration to me.
+// BIT*:
+// I am member class of the BITstar class (i.e., I am in it's namespace), so I need to include it's definition to be
+// aware of the class BITstar. It has a forward declaration to me and the other helper classes.
 #include "ompl/geometric/planners/bitstar/BITstar.h"
 
 namespace ompl
@@ -61,19 +62,16 @@ namespace ompl
     {
         /** @anchor gVertex
         @par Short description
-        A class to store a state as a vertex in a (tree) graph.
-        Allocates and frees it's own memory on construction/destruction.
-        Parent vertices are owned by their children as shared pointers,
-        assuring that a parent vertex will not be deleted while the child exists.
-        Child vertices are owned by their parents as weak pointers, assuring
-        that the shared-pointer ownership loop is broken.
+        A class to store a state as a vertex in a (tree) graph. Allocates and frees it's own memory on
+        construction/destruction. Parent vertices are owned by their children as shared pointers, assuring that a parent
+        vertex will not be deleted while the child exists. Child vertices are owned by their parents as weak pointers,
+        assuring that the shared-pointer ownership loop is broken.
 
         @par Note
-        Add/Remove functions should almost always update their children's cost.
-        The only known exception is when a series of operations are being performed
-        and it would be beneficial to delay the update until the last operation. In this case,
-        make sure that the last call updates the children and is on the highest ancestor that has been
-        changed. Updates only flow downstream.
+        Add/Remove functions should almost always update their children's cost. The only known exception is when a
+        series of operations are being performed and it would be beneficial to delay the update until the last
+        operation. In this case, make sure that the last call updates the children and is on the highest ancestor that
+        has been changed. Updates only flow downstream.
         */
 
         /** \brief The vertex of the underlying graphs in \ref gBITstar "BIT*"*/
@@ -88,9 +86,6 @@ namespace ompl
 
             /** \brief The (unique) vertex ID */
             BITstar::VertexId getId() const;
-
-            /** \brief The optimization objective used by the vertex. */
-            ompl::base::OptimizationObjectivePtr getOpt() const;
 
             /** \brief The state of a vertex as a constant pointer */
             ompl::base::State const *stateConst() const;

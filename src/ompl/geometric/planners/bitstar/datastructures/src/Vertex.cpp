@@ -35,10 +35,12 @@
 /* Authors: Jonathan Gammell */
 
 // My definition:
+#include "ompl/geometric/planners/bitstar/datastructures/Vertex.h"
+
+// For std::move
 #include <utility>
 
-#include "ompl/geometric/planners/bitstar/datastructures/Vertex.h"
-// The ID generator class, this is actually included via Vertex.h->BITstar.h, but to be clear.
+// The ID generator class
 #include "ompl/geometric/planners/bitstar/datastructures/IdGenerator.h"
 
 namespace ompl
@@ -83,13 +85,6 @@ namespace ompl
             return vId_;
         }
 
-        ompl::base::OptimizationObjectivePtr BITstar::Vertex::getOpt() const
-        {
-            this->assertNotPruned();
-
-            return opt_;
-        }
-
         ompl::base::State const *BITstar::Vertex::stateConst() const
         {
             this->assertNotPruned();
@@ -129,11 +124,13 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->isRoot() == false && this->hasParent() == false)
             {
                 throw ompl::Exception("Attempting to get the depth of a vertex that does not have a parent yet is not "
                                       "root.");
             }
+#endif  // BITSTAR_DEBUG
 
             return depth_;
         }
@@ -142,6 +139,7 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->hasParent() == false)
             {
                 if (this->isRoot() == true)
@@ -153,6 +151,7 @@ namespace ompl
                     throw ompl::Exception("Attempting to access the parent of a vertex that does not have one.");
                 }
             }
+#endif  // BITSTAR_DEBUG
 
             return parentSPtr_;
         }
@@ -161,6 +160,7 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->hasParent() == false)
             {
                 if (this->isRoot() == true)
@@ -172,6 +172,7 @@ namespace ompl
                     throw ompl::Exception("Attempting to access the parent of a vertex that does not have one.");
                 }
             }
+#endif  // BITSTAR_DEBUG
 
             return parentSPtr_;
         }
@@ -181,15 +182,17 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->hasParent() == true)
             {
                 throw ompl::Exception("Attempting to add a parent to a vertex that already has one.");
             }
-            else if (this->isRoot() == true)
+
+            if (this->isRoot() == true)
             {
                 throw ompl::Exception("Attempting to add a parent to the root vertex, which cannot have a parent.");
             }
-            // No else.
+#endif  // BITSTAR_DEBUG
 
             // Store the parent
             parentSPtr_ = newParent;
@@ -205,15 +208,18 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->hasParent() == false)
             {
                 throw ompl::Exception("Attempting to remove the parent of a vertex that does not have a parent.");
             }
-            else if (this->isRoot() == true)
+
+            if (this->isRoot() == true)
             {
                 throw ompl::Exception("Attempting to remove the parent of the root vertex, which cannot have a "
                                       "parent.");
             }
+#endif  // BITSTAR_DEBUG
 
             // Clear my parent
             parentSPtr_.reset();
@@ -237,16 +243,18 @@ namespace ompl
 
             for (const auto &childWPtr : childWPtrs_)
             {
+#ifdef BITSTAR_DEBUG
                 // Check that the weak pointer hasn't expired
                 if (childWPtr.expired() == true)
                 {
-                    throw ompl::Exception("A (weak) pointer to a child was found to have expired while calculating the "
+                    throw ompl::Exception("A (weak) pointer to a child was found to have expired while collecting the "
                                           "children of a vertex.");
                 }
-                else
-                {
-                    children->push_back(childWPtr.lock());
-                }
+// No else, the pointer is valid
+#endif  // BITSTAR_DEBUG
+
+                // Lock and push back
+                children->push_back(childWPtr.lock());
             }
         }
 
@@ -258,16 +266,18 @@ namespace ompl
 
             for (const auto &childWPtr : childWPtrs_)
             {
+#ifdef BITSTAR_DEBUG
                 // Check that the weak pointer hasn't expired
                 if (childWPtr.expired() == true)
                 {
-                    throw ompl::Exception("A (weak) pointer to a child was found to have expired while calculating the "
+                    throw ompl::Exception("A (weak) pointer to a child was found to have expired while collecting the "
                                           "children of a vertex.");
                 }
-                else
-                {
-                    children->push_back(childWPtr.lock());
-                }
+// No else, the pointer is valid
+#endif  // BITSTAR_DEBUG
+
+                // Lock and push back
+                children->push_back(childWPtr.lock());
             }
         }
 
@@ -298,13 +308,15 @@ namespace ompl
             for (auto childIter = childWPtrs_.begin(); childIter != childWPtrs_.end() && foundChild == false;
                  ++childIter)
             {
+#ifdef BITSTAR_DEBUG
                 // Check that the weak pointer hasn't expired
                 if (childIter->expired() == true)
                 {
                     throw ompl::Exception("A (weak) pointer to a child was found to have expired while removing a "
                                           "child from a vertex.");
                 }
-                // No else, weak pointer is valid
+// No else, weak pointer is valid
+#endif  // BITSTAR_DEBUG
 
                 // Check if this is the child we're looking for
                 if (childIter->lock()->getId() == oldChild->getId())
@@ -325,13 +337,15 @@ namespace ompl
                 // No else, move on
             }
 
+#ifdef BITSTAR_DEBUG
             // Throw if we did not find the child
             if (foundChild == false)
             {
                 throw ompl::Exception("Attempting to remove a child vertex not present in the list of children stored "
                                       "in the (supposed) parent vertex.");
             }
-            // No else, we were successful
+// No else, we were successful
+#endif  // BITSTAR_DEBUG
         }
 
         ompl::base::Cost BITstar::Vertex::getCost() const
@@ -345,10 +359,12 @@ namespace ompl
         {
             this->assertNotPruned();
 
+#ifdef BITSTAR_DEBUG
             if (this->hasParent() == false)
             {
                 throw ompl::Exception("Attempting to access the incoming-edge cost of a vertex without a parent.");
             }
+#endif  // BITSTAR_DEBUG
 
             return edgeCost_;
         }
@@ -454,6 +470,7 @@ namespace ompl
                 // Set the depth to 0u, getDepth will throw in this condition
                 depth_ = 0u;
 
+#ifdef BITSTAR_DEBUG
                 // Assert that I have not been asked to cascade this bad data to my children:
                 if (this->hasChildren() == true && cascadeUpdates == true)
                 {
@@ -461,6 +478,7 @@ namespace ompl
                                           "not have a parent and is not root. This information would therefore be "
                                           "gibberish.");
                 }
+#endif  // BITSTAR_DEBUG
             }
             else
             {
@@ -477,13 +495,15 @@ namespace ompl
                 // Now, iterate over my list of children and tell each one to update its own damn cost:
                 for (auto &childWPtr : childWPtrs_)
                 {
+#ifdef BITSTAR_DEBUG
                     // Check that it hasn't expired
                     if (childWPtr.expired() == true)
                     {
                         throw ompl::Exception("A (weak) pointer to a child has was found to have expired while "
                                               "updating the costs and depths of descendant vertices.");
                     }
-                    // No else, weak pointer is valid
+// No else, weak pointer is valid
+#endif  // BITSTAR_DEBUG
 
                     // Get a lock and tell the child to update:
                     childWPtr.lock()->updateCostAndDepth(true);
@@ -497,12 +517,14 @@ namespace ompl
         // Private functions:
         void BITstar::Vertex::assertNotPruned() const
         {
+#ifdef BITSTAR_DEBUG
             if (isPruned_ == true)
             {
                 std::cout << std::endl
                           << "vId: " << vId_ << std::endl;
                 throw ompl::Exception("Attempting to access a pruned vertex.");
             }
+#endif  // BITSTAR_DEBUG
         }
         /////////////////////////////////////////////////////////////////////////////////////////////
     }  // geometric
